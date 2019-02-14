@@ -41,7 +41,7 @@ environment variables set and run `/wal-g/recover.sh`. It will:
 
 At this point you should have high confidence that the recovery was successful.
 If you start your recovered backup, be sure to turn `archive_mode = off` to avoid
-pushing additional WAL files to your production backups!
+pushing additional WAL files to S3!
 
 ## Postgres Versions
 Currently I build for Postgres 9.6 and Postgres 11. Be advised that 9.6 is the
