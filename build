@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+REV=$1
+IMAGE_NAME=koehn/postgres-wal-g
+
+build_image() {
+  BASE=$1
+  IMAGE=$IMAGE_NAME:$BASE-$REV
+
+  docker build --pull -t "$IMAGE" --build-arg BASE=$BASE .
+  docker push $IMAGE
+}
+
+build_image "11.1"  "$REV"
+build_image "9.6" 
+
+wait
