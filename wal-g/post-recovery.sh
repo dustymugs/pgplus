@@ -2,12 +2,15 @@
 
 set -e
 
-export DATA=/var/lib/postgresql/data/pgsql
+if [ -z ${PGDATA+x} ]; then
+  export PGDATA=/var/lib/postgresql/data/pgsql
+fi
+
 export PG_VERSION=$(ls /usr/lib/postgresql/)
 
 # disable recovery mode, re-enable remote connections and archive mode
-mv $DATA/pg_hba.conf.orig $DATA/pg_hba.conf
-sed -i -e 's/^archive_mode = off/archive_mode = on/' $DATA/postgresql.conf
+mv $PGDATA/pg_hba.conf.orig $PGDATA/pg_hba.conf
+sed -i -e 's/^archive_mode = off/archive_mode = on/' $PGDATA/postgresql.conf
 
 cat <<EOF
 ******************
@@ -17,5 +20,5 @@ cat <<EOF
 ******************
 EOF
 
-bash -c "sleep 3 && /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl stop -D $DATA" &
+bash -c "sleep 3 && /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl stop -D $PGDATA" &
 
