@@ -1,3 +1,7 @@
 #!/bin/bash
 
-wal-g backup-push /var/lib/postgresql/data/pgsql
+if [ -z ${PGDATA+x} ]; then
+  export PGDATA=/var/lib/postgresql/data/pgsql
+fi
+
+wal-g backup-push "$PGDATA"
