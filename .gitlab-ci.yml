@@ -12,14 +12,14 @@ build-9.6:
   only: 
   - tags
 
-build-11.2:
+build-11.3:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
   - echo "{\"auths\":{\"index.docker.io\":{\"username\":\"$DOCKER_LOGIN\",\"password\":\"$DOCKER_PASSWORD\"}}}" > /kaniko/.docker/config.json
-  - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination koehn/postgres-wal-g:11.2-$CI_COMMIT_TAG --build-arg BASE=11.2
+  - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination koehn/postgres-wal-g:11.3-$CI_COMMIT_TAG --build-arg BASE=11.3
   only: 
   - tags
 
