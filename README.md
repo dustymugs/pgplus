@@ -44,5 +44,5 @@ If you start your recovered backup, be sure to turn `archive_mode = off` to avoi
 pushing additional WAL files to S3!
 
 ## Postgres Versions
-Currently I build for Postgres 9.6 and Postgres 11. Be advised that 9.6 is the
+Currently I build for Postgres 9.6 and Postgres 12. Be advised that 9.6 is the
 earliest version that WAL-G supports. 
