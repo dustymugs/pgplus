@@ -15,7 +15,9 @@ fi
 wal-g backup-fetch $PGDATA LATEST
 
 # enable recovery mode, disable remote connections and archive mode
-cp /wal-g/recovery.conf $PGDATA/
+touch $PGDATA/recovery.signal
+cp $PGDATA/postgresql.conf $PGDATA/postgresql.conf.orig
+cat /wal-g/recovery.conf >> $PGDATA/postgresql.conf
 mv $PGDATA/pg_hba.conf $PGDATA/pg_hba.conf.orig
 cp /wal-g/pg_hba.conf $PGDATA/pg_hba.conf
 sed -i -e 's/^archive_mode = on/archive_mode = off/' $PGDATA/postgresql.conf
