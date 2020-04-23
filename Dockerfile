@@ -1,5 +1,5 @@
 #
-# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0-0.2.14-1.12.0 . --build-arg POSTGIS_RELEASE=12-3.0
+# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0 . --build-arg POSTGIS_RELEASE=12-3.0
 #
 # docker run --rm -p 5432:5432 \
 # 	-e POSTGRES_USER=myusername \
@@ -11,7 +11,7 @@
 # 	-e POSTGRES_INITDB_ARGS="--data-checksums" \
 # 	-e POSTGRES_PRIMARY_CONNINFO="host=master port=5432 user=myusername password=mypassword" \
 # 	-d \
-# 	dustymugs/pgplus:12-3.0-0.2.14-1.12.0
+# 	dustymugs/pgplus:12-3.0
 #
 
 ARG POSTGIS_RELEASE=12-3.0
@@ -30,7 +30,7 @@ ARG PGBOUNCER_CLIENT_TLS_KEY_FILE=/etc/ssl/private/pgplus.key
 ARG PGBOUNCER_CLIENT_TLS_CERT_FILE=/etc/ssl/certs/pgplus.pem
 ARG PGBOUNCER_SERVER_TLS_SSLMODE=allow
 ARG PGBOUNCER_AUTH_TYPE=md5
-ARG PGBOUNCER_POOL_MODE=session
+ARG PGBOUNCER_POOL_MODE=transaction
 ARG PGBOUNCER_MAX_CLIENT_CONN=100
 ARG PGBOUNCER_DEFAULT_POOL_SIZE=20
 ARG PGBOUNCER_MIN_POOL_SIZE=0
@@ -39,8 +39,14 @@ ARG PGBOUNCER_RESERVE_POOL_TIMEOUT=5
 ARG PGBOUNCER_MAX_DB_CONNECTIONS=0
 ARG PGBOUNCER_MAX_USER_CONNECTIONS=0
 
+# if not empty, wal-g will fetch latest base backup and restore to $PGDATA
+ENV POSTGRES_RESTORE=""
+
+# if not empty, we touch the empty file $PGDATA/standby.signal
 ENV POSTGRES_IS_STANDBY=""
+
 # https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
+# if POSTGRES_IS_STANDBY is not empty, this must be provided
 ENV POSTGRES_PRIMARY_CONNINFO=""
 
 ENV PGBOUNCER_LOGFILE=$PGBOUNCER_LOGFILE

@@ -30,9 +30,6 @@ primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'
 EOF
 
 if [ -n "$POSTGRES_IS_STANDBY" ]; then
-	# pull most recent full backup
-	wal-g backup-fetch $PGDATA LATEST
-
 	# indicate that this instance is to be a standby
 	touch $PGDATA/standby.signal
 fi

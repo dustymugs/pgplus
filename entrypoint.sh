@@ -4,13 +4,19 @@ set -e
 
 POSTGRES_USER=${POSTGRES_USER:-postgres}
 
+if [ -n "$POSTGRES_RESTORE" ]; then
+	if [ -s "$PGDATA/PG_VERSION" ]; then
+		mv "$PGDATA" "${PGDATA}.old"
+	fi
+
+	gosu postgres wal-g backup-fetch $PGDATA LATEST
+fi
+
 # create certs
 openssl req -new -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=example.com" -x509 -days 365 -nodes -out /etc/ssl/certs/pgplus.pem -keyout /etc/ssl/private/pgplus.key
 chmod 644 /etc/ssl/certs/pgplus.pem
 chmod 600 /etc/ssl/private/pgplus.key
 chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
-
-# update wal-g config
 
 # create /etc/pgbouncer/local.ini config
 cat << EOF > /etc/pgbouncer/local.ini
