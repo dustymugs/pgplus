@@ -1,15 +1,17 @@
 #
-# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0-0.2.14 . --build-arg POSTGIS_RELEASE=12-3.0
+# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0-0.2.14-1.12.0 . --build-arg POSTGIS_RELEASE=12-3.0
 #
 # docker run --rm -p 5432:5432 \
+# 	-e POSTGRES_USER=myusername \
 # 	-e POSTGRES_PASSWORD=mypassword \
 # 	-e AWS_ACCESS_KEY_ID=myaccesskey \
 # 	-e AWS_SECRET_ACCESS_KEY=mysecretaccesskey \
 # 	-e AWS_ENDPOINT=myendpiont \
 # 	-e WALG_S3_PREFIX=s3://my/path/to/ \
 # 	-e POSTGRES_INITDB_ARGS="--data-checksums" \
+# 	-e POSTGRES_PRIMARY_CONNINFO="host=master port=5432 user=myusername password=mypassword" \
 # 	-d \
-# 	dustymugs/pgplus
+# 	dustymugs/pgplus:12-3.0-0.2.14-1.12.0
 #
 
 ARG POSTGIS_RELEASE=12-3.0
@@ -19,10 +21,8 @@ FROM postgis/postgis:$POSTGIS_RELEASE
 ARG WALG_RELEASE=v0.2.14
 ARG PGBOUNCER_RELEASE=1.12.0
 
-ARG POSTGRES_USER=postgres
-
 ARG PGBOUNCER_LOGFILE=/var/log/postgresql/pgbouncer.log
-ARG PGBOUNCER_PID_FILE=/var/run/postgresql/pgbouncer.pid
+ARG PGBOUNCER_PIDFILE=/var/run/postgresql/pgbouncer.pid
 ARG PGBOUNCER_LISTEN_ADDR=*
 ARG PGBOUNCER_LISTEN_PORT=6432
 ARG PGBOUNCER_CLIENT_TLS_SSLMODE=allow
@@ -39,8 +39,12 @@ ARG PGBOUNCER_RESERVE_POOL_TIMEOUT=5
 ARG PGBOUNCER_MAX_DB_CONNECTIONS=0
 ARG PGBOUNCER_MAX_USER_CONNECTIONS=0
 
-ENV POSTGRES_USER=$POSTGRES_USER
+ENV POSTGRES_IS_STANDBY=""
+# https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
+ENV POSTGRES_PRIMARY_CONNINFO=""
 
+ENV PGBOUNCER_LOGFILE=$PGBOUNCER_LOGFILE
+ENV PGBOUNCER_PIDFILE=$PGBOUNCER_PIDFILE
 ENV PGBOUNCER_LISTEN_ADDR=$PGBOUNCER_LISTEN_ADDR
 ENV PGBOUNCER_LISTEN_PORT=$PGBOUNCER_LISTEN_PORT
 ENV PGBOUNCER_CLIENT_TLS_SSLMODE=$PGBOUNCER_CLIENT_TLS_SSLMODE
@@ -71,6 +75,9 @@ RUN apt-get install -qqy pgbouncer && \
 
 COPY entrypoint.sh /pgplus-docker-entrypoint.sh
 RUN chmod a+x /pgplus-docker-entrypoint.sh
+
+COPY 99_wal-g.sh /docker-entrypoint-initdb.d
+RUN chmod a+x /docker-entrypoint-initdb.d/99_wal-g.sh
 
 ENTRYPOINT ["/pgplus-docker-entrypoint.sh"]
 CMD ["postgres"]
