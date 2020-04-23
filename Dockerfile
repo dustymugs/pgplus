@@ -1,7 +1,7 @@
 #
-# docker build -f Dockerfile -t dustymugs/postgis-wal-g:12-3.0-0.2.14 . --build-arg BASE=12-3.0
+# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0-0.2.14 . --build-arg BASE=12-3.0
 #
-# docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=mypassword -e AWS_ACCESS_KEY_ID=myaccesskey -e AWS_SECRET_ACCESS_KEY=mysecretaccesskey -e AWS_ENDPOINT=myendpiont -e WALG_S3_PREFIX=s3://my/path/to/ -d dustymugs/postgis-wal-g
+# docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=mypassword -e AWS_ACCESS_KEY_ID=myaccesskey -e AWS_SECRET_ACCESS_KEY=mysecretaccesskey -e AWS_ENDPOINT=myendpiont -e WALG_S3_PREFIX=s3://my/path/to/ -d dustymugs/pgplus
 #
 
 ARG BASE
