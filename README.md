@@ -1,21 +1,25 @@
-This repo is a fork of: https://gitlab.koehn.com/docker/postgres-wal-g
+# This repo is a fork of: https://gitlab.koehn.com/docker/postgres-wal-g
 
-# Postgres WAL-G
+# PGPlus
 
-This image extends the stock [Postgres Image](https://hub.docker.com/_/postgres/)
-and adds [WAL-G](https://github.com/wal-g/wal-g) support, along with some
-helpful scripts. It allows you to simply and easily create continuous 
-archives of Postgres databases in S3-compatible storage. 
+This image builds upon the stock [PostGIS Image](https://hub.docker.com/postgis/postgis/)
+and adds [WAL-G](https://github.com/wal-g/wal-g) and [pgBouncer](https://github.com/pgbouncer/pgbouncer), along with some management scripts
 
 ## Environment
-To use the image, you'll need to configure a bucket on your favorite S3-
-compatible provider, and set a few environment variables:
 
-* `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` that can read/write files
-to your bucket
-* `AWS_ENDPOINT` (et al) to tell WAL-G where to archive (see 
-[WAL-G documentation](https://github.com/wal-g/wal-g) for details)
+To use the image, you'll need to configure a bucket on a S3-compatible provider and set approriate environment variables:
+
+* `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` that can read/write files to your bucket
+* `AWS_ENDPOINT` to tell WAL-G where to archive (see [WAL-G documentation](https://github.com/wal-g/wal-g) for details)
 * `WALG_S3_PREFIX` to tell WAL-G which bucket and prefix you'd like to use
+
+All WAL-G variables can be passed to `docker run`
+
+Example:
+
+```
+docker run -e AWS_REGION=us-west-2 ... -d dustymugs/pgplus:12-3.0-0.2.14
+```
 
 ## Configuration
 In your `/varlib/postgresql/data/pgsql/postgresql.conf` file, set your [archive
