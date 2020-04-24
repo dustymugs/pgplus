@@ -34,7 +34,7 @@ chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
 # create /etc/pgbouncer/local.ini config
 cat << EOF > /etc/pgbouncer/local.ini
 [databases]
-* =
+* = host=localhost
 
 [pgbouncer]
 
