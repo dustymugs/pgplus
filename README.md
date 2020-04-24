@@ -1,4 +1,4 @@
-## This repo is a fork of: https://gitlab.koehn.com/docker/postgres-wal-g
+## This repo started as a fork of [koehn's postgres-wal-g docker image](https://gitlab.koehn.com/docker/postgres-wal-g)
 
 # PGPlus
 
