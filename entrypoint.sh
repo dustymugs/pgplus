@@ -5,15 +5,28 @@ set -e
 POSTGRES_USER=${POSTGRES_USER:-postgres}
 
 if [ -n "$POSTGRES_RESTORE" ]; then
+
+	# shouldn't exist, but just in case
 	if [ -s "$PGDATA/PG_VERSION" ]; then
 		mv "$PGDATA" "${PGDATA}.old"
 	fi
 
+	# download latest base-backup
 	gosu postgres wal-g backup-fetch $PGDATA LATEST
+
+	# update primary_conninfo if value provided
+	if [ -n "$POSTGRES_PRIMARY_CONNINFO" ]; then
+		sed -i "s~^primary_conninfo = .*~primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'~" "$PGDATA/conf.d/wal-e.conf"
+	fi
+
+	if [ -n "$POSTGRES_IS_STANDBY" ]; then
+		# indicate that this instance is to be a standby
+		touch "$PGDATA/standby.signal"
+	fi
 fi
 
 # create certs
-openssl req -new -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=example.com" -x509 -days 365 -nodes -out /etc/ssl/certs/pgplus.pem -keyout /etc/ssl/private/pgplus.key
+openssl req -new -subj "/C=US/ST=Ohio/L=Columbus/O=PGPlus/OU=PGPlus/CN=pgplus.local" -x509 -days 365 -nodes -out /etc/ssl/certs/pgplus.pem -keyout /etc/ssl/private/pgplus.key
 chmod 644 /etc/ssl/certs/pgplus.pem
 chmod 600 /etc/ssl/private/pgplus.key
 chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
@@ -21,7 +34,7 @@ chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
 # create /etc/pgbouncer/local.ini config
 cat << EOF > /etc/pgbouncer/local.ini
 [databases]
-* = host=localhost
+* =
 
 [pgbouncer]
 
@@ -30,6 +43,8 @@ pidfile = $PGBOUNCER_PIDFILE
 
 listen_addr = $PGBOUNCER_LISTEN_ADDR
 listen_port = $PGBOUNCER_LISTEN_PORT
+
+unix_socket_dir = ${POSTGRES_UNIX_SOCKET_DIRECTORIES:-/var/run/postgresql}
 
 client_tls_sslmode = $PGBOUNCER_CLIENT_TLS_SSLMODE
 client_tls_key_file = $PGBOUNCER_CLIENT_TLS_KEY_FILE

@@ -21,6 +21,8 @@ FROM postgis/postgis:$POSTGIS_RELEASE
 ARG WALG_RELEASE=v0.2.14
 ARG PGBOUNCER_RELEASE=1.12.0
 
+ARG POSTGRES_UNIX_SOCKET_DIRECTORIES=/var/run/postgresql
+
 ARG PGBOUNCER_LOGFILE=/var/log/postgresql/pgbouncer.log
 ARG PGBOUNCER_PIDFILE=/var/run/postgresql/pgbouncer.pid
 ARG PGBOUNCER_LISTEN_ADDR=*
@@ -48,6 +50,9 @@ ENV POSTGRES_IS_STANDBY=""
 # https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
 # if POSTGRES_IS_STANDBY is not empty, this must be provided
 ENV POSTGRES_PRIMARY_CONNINFO=""
+
+# explicit because pgbouncer connects to postgres via unix sockets
+ENV POSTGRES_UNIX_SOCKET_DIRECTORIES=$POSTGRES_UNIX_SOCKET_DIRECTORIES
 
 ENV PGBOUNCER_LOGFILE=$PGBOUNCER_LOGFILE
 ENV PGBOUNCER_PIDFILE=$PGBOUNCER_PIDFILE
@@ -84,6 +89,8 @@ RUN chmod a+x /pgplus-docker-entrypoint.sh
 
 COPY 99_wal-g.sh /docker-entrypoint-initdb.d
 RUN chmod a+x /docker-entrypoint-initdb.d/99_wal-g.sh
+
+EXPOSE 5432 6432
 
 ENTRYPOINT ["/pgplus-docker-entrypoint.sh"]
 CMD ["postgres"]

@@ -2,6 +2,8 @@
 
 set -e
 
+POSTGRES_UNIX_SOCKET_DIRECTORIES=${POSTGRES_UNIX_SOCKET_DIRECTORIES:-/var/run/postgresql}
+
 # modify $PGDATA/postgresql.conf
 mkdir -p $PGDATA/conf.d
 echo "include_dir = 'conf.d'" >> $PGDATA/postgresql.conf
@@ -11,12 +13,17 @@ if [ -n "$POSTGRES_IS_STANDBY" -a -z "$POSTGRES_PRIMARY_CONNINFO" ]; then
 	exit 1
 fi
 
-# add replication auth
-echo "host   replication     ${POSTGRES_USER}                                     md5" > $PGDATA/pg_hbda.conf
-
 # add wal-e.conf
 cat << EOF > $PGDATA/conf.d/wal-e.conf
+unix_socket_directories = '${POSTGRES_UNIX_SOCKET_DIRECTORIES}'
+
+ssl = on
+ssl_cert_file = '/etc/ssl/certs/pgplus.pem'
+ssl_key_file = '/etc/ssl/private/pgplus.key'
+
 wal_level = replica
+
+checkpoint_timeout = 60
 
 archive_mode = on
 archive_command = 'wal-g wal-push "%p"'
@@ -28,6 +35,10 @@ wal_keep_segments = 60
 
 primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'
 EOF
+
+# add replication auth
+echo "host    replication    ${POSTGRES_USER}    0.0.0.0/0    md5" >> $PGDATA/pg_hba.conf
+echo "host    replication    ${POSTGRES_USER}    ::0/0    md5" >> $PGDATA/pg_hba.conf
 
 if [ -n "$POSTGRES_IS_STANDBY" ]; then
 	# indicate that this instance is to be a standby
