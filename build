@@ -2,18 +2,16 @@
 
 set -e
 
-REV=$1
-IMAGE_NAME=koehn/postgres-wal-g
+IMAGE_NAME=dustymugs/pgplus
 
 build_image() {
-  BASE=$1
-  IMAGE=$IMAGE_NAME:$BASE-$REV
+  POSTGIS_RELEASE=$1
+  IMAGE=$IMAGE_NAME:$BASE
 
-  docker build --pull -t "$IMAGE" --build-arg BASE=$BASE .
+  docker build --pull -t "$IMAGE" --build-arg POSTGIS_RELEASE=$POSTGIS_RELEASE .
   docker push $IMAGE
 }
 
-build_image "11.1"  "$REV"
-build_image "9.6" 
+build_image "12-3.0"
 
 wait
