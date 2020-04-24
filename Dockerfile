@@ -30,9 +30,8 @@ ARG PGBOUNCER_LISTEN_PORT=6432
 ARG PGBOUNCER_CLIENT_TLS_SSLMODE=allow
 ARG PGBOUNCER_CLIENT_TLS_KEY_FILE=/etc/ssl/private/pgplus.key
 ARG PGBOUNCER_CLIENT_TLS_CERT_FILE=/etc/ssl/certs/pgplus.pem
-ARG PGBOUNCER_SERVER_TLS_SSLMODE=allow
 ARG PGBOUNCER_AUTH_TYPE=md5
-ARG PGBOUNCER_POOL_MODE=transaction
+ARG PGBOUNCER_POOL_MODE=session
 ARG PGBOUNCER_MAX_CLIENT_CONN=100
 ARG PGBOUNCER_DEFAULT_POOL_SIZE=20
 ARG PGBOUNCER_MIN_POOL_SIZE=0
@@ -76,8 +75,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update -qq && \
     apt-get install -qqy curl ca-certificates libsodium23 vim && \
     cd /usr/local/bin && curl -L https://github.com/wal-g/wal-g/releases/download/$WALG_RELEASE/wal-g.linux-amd64.tar.gz | tar xzf - 
-
-COPY wal-g /wal-g
 
 RUN apt-get install -qqy pgbouncer && \
 		echo "%include /etc/pgbouncer/local.ini" >> /etc/pgbouncer/pgbouncer.ini && \

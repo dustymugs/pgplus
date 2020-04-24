@@ -26,13 +26,16 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 fi
 
 # create certs
-openssl req -new -subj "/C=US/ST=Ohio/L=Columbus/O=PGPlus/OU=PGPlus/CN=pgplus.local" -x509 -days 365 -nodes -out /etc/ssl/certs/pgplus.pem -keyout /etc/ssl/private/pgplus.key
-chmod 644 /etc/ssl/certs/pgplus.pem
-chmod 600 /etc/ssl/private/pgplus.key
-chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
+if [ ! -f /etc/ssl/private/pgplus.key ]; then
+	openssl req -new -subj "/C=US/ST=Ohio/L=Columbus/O=PGPlus/OU=PGPlus/CN=pgplus.local" -x509 -days 365 -nodes -out /etc/ssl/certs/pgplus.pem -keyout /etc/ssl/private/pgplus.key
+	chmod 644 /etc/ssl/certs/pgplus.pem
+	chmod 600 /etc/ssl/private/pgplus.key
+	chown postgres:postgres /etc/ssl/certs/pgplus.pem /etc/ssl/private/pgplus.key
+fi
 
 # create /etc/pgbouncer/local.ini config
-cat << EOF > /etc/pgbouncer/local.ini
+if [ ! -f /etc/pgbouncer/local.ini ]; then
+	cat << EOF > /etc/pgbouncer/local.ini
 [databases]
 * = host=localhost
 
@@ -67,13 +70,14 @@ reserve_pool_timeout = $PGBOUNCER_RESERVE_POOL_TIMEOUT
 max_db_connections = $PGBOUNCER_MAX_DB_CONNECTIONS
 max_user_connections = $PGBOUNCER_MAX_USER_CONNECTIONS
 EOF
-chown postgres:postgres /etc/pgbouncer/local.ini
+	chown postgres:postgres /etc/pgbouncer/local.ini
 
-MD5HASH=`echo -n "${POSTGRES_PASSWORD}${POSTGRES_USER}" | md5sum | awk 'BEGIN {FS=" "};{print $1}'`
-echo "\"${POSTGRES_USER}\" \"md5${MD5HASH}\"" > /etc/pgbouncer/userlist.txt
+	MD5HASH=`echo -n "${POSTGRES_PASSWORD}${POSTGRES_USER}" | md5sum | awk 'BEGIN {FS=" "};{print $1}'`
+	echo "\"${POSTGRES_USER}\" \"md5${MD5HASH}\"" > /etc/pgbouncer/userlist.txt
+fi
 
 # start pgbouncer
-/etc/init.d/pgbouncer start
+(/etc/init.d/pgbouncer start || true)
 
 # run postgresql's entrypoint script
 exec /docker-entrypoint.sh "$@"
