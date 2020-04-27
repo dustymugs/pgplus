@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 POSTGRES_USER=${POSTGRES_USER:-postgres}
 
 if [ -n "$POSTGRES_RESTORE" ]; then
@@ -12,7 +10,19 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 	fi
 
 	# download latest base-backup
-	gosu postgres wal-g backup-fetch $PGDATA LATEST
+	counter=1
+	while [ $counter -gt 0 ]; do
+		echo -n "Downloading latest base-backup... "
+		gosu postgres wal-g backup-fetch $PGDATA LATEST
+		result="$?"
+		if [ "$result" = "0" ]; then
+			echo "success"
+			break
+		fi
+		echo "failed"
+		counter=$(( $counter + 1 ))
+		sleep 60
+	done
 
 	# update primary_conninfo if value provided
 	if [ -n "$POSTGRES_PRIMARY_CONNINFO" ]; then
@@ -24,6 +34,8 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 		touch "$PGDATA/standby.signal"
 	fi
 fi
+
+set -e
 
 # create certs
 if [ ! -f /etc/ssl/private/pgplus.key ]; then
@@ -37,7 +49,7 @@ fi
 if [ ! -f /etc/pgbouncer/local.ini ]; then
 	cat << EOF > /etc/pgbouncer/local.ini
 [databases]
-* = host=localhost
+* =
 
 [pgbouncer]
 
