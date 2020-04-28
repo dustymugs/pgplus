@@ -51,6 +51,11 @@ spec:
             configMapKeyRef:
               name: pgplus
               key: postgres.is_standby
+        - name: POSTGRES_INITDB_ARGS
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: postgres.initdb_args
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:

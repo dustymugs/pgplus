@@ -23,6 +23,7 @@ if [ -f "$PODINFO_LABELS" ]; then
 	export POSTGRES_IS_STANDBY=$(grep "^is_standby=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
 
 	export POSTGRES_RESTORE=$(grep "^restore=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
+
 	# TODO add watcher daemon to monitor k8s label changes
 fi
 
