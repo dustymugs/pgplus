@@ -13,8 +13,8 @@ spec:
     metadata:
       labels:
         role: db
-        is_standby: # set to non-empty string (e.g. is_standby: "true") if PostgreSQL should be a standby but rather a master. Controls env variable: POSTGRES_IS_STANDBY
-        restore: # set to a non-empty string (e.g. is_standby: "true") if PostgreSQL should restore base-backup. Controls env variable: POSTGRES_RESTORE
+        is_standby: # set to non-empty string (e.g. is_standby: 1) if PostgreSQL should be a standby but rather a master. Controls env variable: POSTGRES_IS_STANDBY
+        restore: # set to a non-empty string (e.g. is_standby: 1) if PostgreSQL should restore base-backup. Controls env variable: POSTGRES_RESTORE
         done: 0 # set to non-zero once appropriate labels are set on each Pod
     spec:
       containers:
