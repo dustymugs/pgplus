@@ -1,3 +1,7 @@
+# PGPlus on Kubernetes
+
+## A basic workflow to create a new PostgreSQL cluster
+
 1. copy `secret.yaml` and update copy
 
 ```
