@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgplus
+  labels:
+    role: db
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      role: db
+  template:
+    metadata:
+      labels:
+        role: db
+        is_standby: # set to non-empty string (e.g. is_standby: "true") if PostgreSQL should be a standby but rather a master. Controls env variable: POSTGRES_IS_STANDBY
+        restore: # set to a non-empty string (e.g. is_standby: "true") if PostgreSQL should restore base-backup. Controls env variable: POSTGRES_RESTORE
+        done: 0 # set to non-zero once appropriate labels are set on each Pod
+    spec:
+      containers:
+      - name: pgplus
+        image: dustymugs/pgplus:12-3.0
+        imagePullPolicy: Always
+        resources:
+          limit:
+            memory: "1Gi"
+          requests:
+            memory: "512Gi"
+        env:
+        - name: POSTGRES_MASTER_DNS_NAME # FQDN for master PostgreSQL instance
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: postgres.master_dns_name
+        - name: POSTGRES_RESTORE # non-empty string instructs container to download latest base-backup. overwritten by the pod label `restore`
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: postgres.restore
+        - name: POSTGRES_IS_STANDBY # non-empty string instructs container to touch $PGDATA/standby.signal. overwritten by the pod label `is_standby`
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: postgres.is_standby
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: pgplus
+              key: postgres.user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pgplus
+              key: postgres.password
+        - name: POSTGRES_PRIMARY_CONNINFO
+          valueFrom:
+            secretKeyRef:
+              name: pgplus
+              key: postgres.primary_conninfo
+        - name: PGBOUNCER_POOL_MODE # (session, transaction, statement)
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: pgbouncer.pool_mode
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: pgplus
+              key: walg.access_key
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: pgplus
+              key: walg.secret_key
+        - name: AWS_ENDPOINT # required for non-AWS endpoints e.g. https://sfo2.digitaloceanspaces.com/
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: walg.endpoint
+        - name: WALG_S3_PREFIX # e.g. s3://bucket/path/to/files
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: walg.s3_prefix
+        ports:
+        - containerPort: 5432
+        - containerPort: 6432
+        command: ["postgres"]
+        volumeMounts:
+          - name: podinfo
+            mountPath: /etc/podinfo
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
