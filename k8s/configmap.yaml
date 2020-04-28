@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgplus
+data:
+  postgres.master_dns_name: "master.db"
+  pgbouncer.pool_mode: "session"
+  walg.aws_endpoint: ""
+  walg.s3_prefix: "s3://bucket/path/to/files"
+  postgres.restore: "1"
+  postgres.is_standby: "1"

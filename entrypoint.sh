@@ -10,11 +10,15 @@ fi
 
 # k8s labels
 if [ -f "$PODINFO_LABELS" ]; then
-	finished=`cat "$PODINFO_LABELS" | grep "done=\"1\"" | wc -l`
+	echo "$PODINFO_LABELS found"
+	finished=`cat "$PODINFO_LABELS" | grep "^done=\".+\"" | wc -l`
 	while [ finished -ne 1 ]; do
-		sleep 5;
-		finished=`cat "$PODINFO_LABELS" | grep "^done=\"1\"" | wc -l`
+		sleep 5
+		finished=`cat "$PODINFO_LABELS" | grep "^done=\".+\"" | wc -l`
+		echo "Pod config *NOT* done"
 	done
+
+	echo "Pod config done"
 
 	export POSTGRES_IS_STANDBY=$(grep "^is_standby=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
 

@@ -13,31 +13,39 @@ spec:
     metadata:
       labels:
         role: db
-        is_standby: # set to non-empty string (e.g. is_standby: 1) if PostgreSQL should be a standby but rather a master. Controls env variable: POSTGRES_IS_STANDBY
-        restore: # set to a non-empty string (e.g. is_standby: 1) if PostgreSQL should restore base-backup. Controls env variable: POSTGRES_RESTORE
-        done: 0 # set to non-zero once appropriate labels are set on each Pod
+        # set to non-empty string (e.g. is_standby: "1") if PostgreSQL should be a standby
+        # Controls env variable: POSTGRES_IS_STANDBY
+        is_standby: ""
+        # set to a non-empty string (e.g. restore: "1") if PostgreSQL should restore base-backup
+        # Controls env variable: POSTGRES_RESTORE
+        restore: ""
+        done: "" # set to non-empty string (e.g. done: "1") once appropriate labels are set on each Pod
     spec:
       containers:
       - name: pgplus
         image: dustymugs/pgplus:12-3.0
         imagePullPolicy: Always
         resources:
-          limit:
+          limits:
             memory: "1Gi"
           requests:
-            memory: "512Gi"
+            memory: "512Mi"
         env:
         - name: POSTGRES_MASTER_DNS_NAME # FQDN for master PostgreSQL instance
           valueFrom:
             configMapKeyRef:
               name: pgplus
               key: postgres.master_dns_name
-        - name: POSTGRES_RESTORE # non-empty string instructs container to download latest base-backup. overwritten by the pod label `restore`
+        # non-empty string instructs container to download latest base-backup
+        # overwritten by the pod label `restore`
+        - name: POSTGRES_RESTORE
           valueFrom:
             configMapKeyRef:
               name: pgplus
               key: postgres.restore
-        - name: POSTGRES_IS_STANDBY # non-empty string instructs container to touch $PGDATA/standby.signal. overwritten by the pod label `is_standby`
+        # non-empty string instructs container to touch $PGDATA/standby.signal
+        # overwritten by the pod label `is_standby`
+        - name: POSTGRES_IS_STANDBY
           valueFrom:
             configMapKeyRef:
               name: pgplus
@@ -72,11 +80,12 @@ spec:
             secretKeyRef:
               name: pgplus
               key: walg.secret_key
-        - name: AWS_ENDPOINT # required for non-AWS endpoints e.g. https://sfo2.digitaloceanspaces.com/
+        # required for non-AWS endpoints e.g. https://sfo2.digitaloceanspaces.com/
+        - name: AWS_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: pgplus
-              key: walg.endpoint
+              key: walg.aws_endpoint
         - name: WALG_S3_PREFIX # e.g. s3://bucket/path/to/files
           valueFrom:
             configMapKeyRef:
@@ -85,7 +94,8 @@ spec:
         ports:
         - containerPort: 5432
         - containerPort: 6432
-        command: ["postgres"]
+        #command: ["/pgplus-docker-entrypoint.sh"]
+        #args: ["postgres"]
         volumeMounts:
           - name: podinfo
             mountPath: /etc/podinfo
