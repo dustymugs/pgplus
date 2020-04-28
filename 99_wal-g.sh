@@ -8,13 +8,9 @@ POSTGRES_UNIX_SOCKET_DIRECTORIES=${POSTGRES_UNIX_SOCKET_DIRECTORIES:-/var/run/po
 mkdir -p $PGDATA/conf.d
 echo "include_dir = 'conf.d'" >> $PGDATA/postgresql.conf
 
-if [ -n "$POSTGRES_IS_STANDBY" -a -z "$POSTGRES_PRIMARY_CONNINFO" ]; then
-	echo "POSTGRES_PRIMARY_CONNINFO required if POSTGRES_IS_STANDBY set"
-	exit 1
-fi
-
-# add wal-e.conf
-cat << EOF > $PGDATA/conf.d/wal-e.conf
+# add local.conf
+cat << EOF > $PGDATA/conf.d/local.conf
+port = ${POSTGRES_PORT}
 unix_socket_directories = '${POSTGRES_UNIX_SOCKET_DIRECTORIES}'
 
 ssl = on
@@ -25,7 +21,7 @@ wal_level = replica
 
 checkpoint_timeout = 60
 
-archive_mode = on
+archive_mode = ${POSTGRES_ARCHIVE_MODE}
 archive_command = 'wal-g wal-push "%p"'
 archive_timeout = 60
 

@@ -2,16 +2,40 @@
 
 POSTGRES_USER=${POSTGRES_USER:-postgres}
 
-if [ -n "$POSTGRES_RESTORE" ]; then
+PODINFO_LABELS="/etc/podinfo/labels"
 
+if [ -z "$POSTGRES_PRIMARY_CONNINFO" -a -n "$POSTGRES_MASTER_DNS_NAME" ]; then
+	export POSTGRES_PRIMARY_CONNINFO="host=${POSTGRES_MASTER_DNS_NAME} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
+fi
+
+# k8s labels
+if [ -f "$PODINFO_LABELS" ]; then
+	finished=`cat "$PODINFO_LABELS" | grep "done=\"1\"" | wc -l`
+	while [ finished -ne 1 ]; do
+		sleep 5;
+		finished=`cat "$PODINFO_LABELS" | grep "^done=\"1\"" | wc -l`
+	done
+
+	export POSTGRES_IS_STANDBY=$(grep "^is_standby=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
+
+	export POSTGRES_RESTORE=$(grep "^restore=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
+
+	# TODO add watcher daemon to monitor k8s label changes
+fi
+
+if [ -n "$POSTGRES_IS_STANDBY" -a -z "$POSTGRES_PRIMARY_CONNINFO" ]; then
+	echo "POSTGRES_PRIMARY_CONNINFO required if POSTGRES_IS_STANDBY set"
+	exit 1
+fi
+
+if [ -n "$POSTGRES_RESTORE" ]; then
 	# shouldn't exist, but just in case
 	if [ -s "$PGDATA/PG_VERSION" ]; then
 		mv "$PGDATA" "${PGDATA}.old"
 	fi
 
 	# download latest base-backup
-	counter=1
-	while [ $counter -gt 0 ]; do
+	while :; do
 		echo -n "Downloading latest base-backup... "
 		gosu postgres wal-g backup-fetch $PGDATA LATEST
 		result="$?"
@@ -20,7 +44,6 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 			break
 		fi
 		echo "failed"
-		counter=$(( $counter + 1 ))
 		sleep 60
 	done
 
