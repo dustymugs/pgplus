@@ -115,3 +115,9 @@ kubectl exec pgplus-68bbbf854f-9l2tb -- gosu postgres bash -c 'wal-g backup-push
 ```
 
 11. At this point, the PGPlus containers will start initializing
+
+12. After a few seconds, check the replication status. We expect one row per standby PostgreSQL pod
+
+```
+kubectl exec pgplus-68bbbf854f-9l2tb -- psql -U postgres -c "SELECT * FROM pg_stat_replication"
+```
