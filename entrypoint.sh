@@ -11,11 +11,11 @@ fi
 # k8s labels
 if [ -f "$PODINFO_LABELS" ]; then
 	echo "$PODINFO_LABELS found"
-	finished=`cat "$PODINFO_LABELS" | grep "^done=\".+\"" | wc -l`
-	while [ finished -ne 1 ]; do
-		sleep 5
-		finished=`cat "$PODINFO_LABELS" | grep "^done=\".+\"" | wc -l`
+	finished=`grep "^done=\".\+\"" "$PODINFO_LABELS" | wc -l`
+	while [ $finished -lt 1 ]; do
 		echo "Pod config *NOT* done"
+		sleep 10
+		finished=`grep "^done=\".\+\"" "$PODINFO_LABELS" | wc -l`
 	done
 
 	echo "Pod config done"
@@ -23,7 +23,6 @@ if [ -f "$PODINFO_LABELS" ]; then
 	export POSTGRES_IS_STANDBY=$(grep "^is_standby=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
 
 	export POSTGRES_RESTORE=$(grep "^restore=" "$PODINFO_LABELS" | awk 'BEGIN{FS="="};{print $2}' | sed --expression 's~"~~g')
-
 	# TODO add watcher daemon to monitor k8s label changes
 fi
 
@@ -41,7 +40,7 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 	# download latest base-backup
 	while :; do
 		echo -n "Downloading latest base-backup... "
-		gosu postgres wal-g backup-fetch $PGDATA LATEST
+		gosu postgres wal-g backup-fetch "$PGDATA" LATEST
 		result="$?"
 		if [ "$result" = "0" ]; then
 			echo "success"
@@ -53,7 +52,7 @@ if [ -n "$POSTGRES_RESTORE" ]; then
 
 	# update primary_conninfo if value provided
 	if [ -n "$POSTGRES_PRIMARY_CONNINFO" ]; then
-		sed -i "s~^primary_conninfo = .*~primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'~" "$PGDATA/conf.d/wal-e.conf"
+		sed -i "s~^primary_conninfo = .*~primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'~" "$PGDATA/conf.d/local.conf"
 	fi
 
 	if [ -n "$POSTGRES_IS_STANDBY" ]; then

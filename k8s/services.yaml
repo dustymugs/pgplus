@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-master
+spec:
+  type: ClusterIP
+  selector:
+    role: db
+    is_standby: ""
+    done: "1"
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: pgsql
+    - port: 6432
+      targetPort: 6432
+      protocol: TCP
+      name: pgbouncer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-standby
+spec:
+  type: ClusterIP
+  selector:
+    role: db
+    is_standby: "1"
+    done: "1"
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: pgsql
+    - port: 6432
+      targetPort: 6432
+      protocol: TCP
+      name: pgbouncer

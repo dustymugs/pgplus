@@ -49,8 +49,8 @@ ENV POSTGRES_RESTORE=""
 # if not empty, we touch the empty file $PGDATA/standby.signal
 ENV POSTGRES_IS_STANDBY=""
 
-# FQDN for the master PostgreSQL instance
-# e.g. master.db.local
+# domain name for the master PostgreSQL instance
+# e.g. master.db
 ENV POSTGRES_MASTER_DNS_NAME=""
 
 # https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING

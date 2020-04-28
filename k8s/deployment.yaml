@@ -13,13 +13,14 @@ spec:
     metadata:
       labels:
         role: db
-        # set to non-empty string (e.g. is_standby: "1") if PostgreSQL should be a standby
+        # set to "1" (e.g. is_standby: "1") if PostgreSQL should be a standby
         # Controls env variable: POSTGRES_IS_STANDBY
         is_standby: ""
-        # set to a non-empty string (e.g. restore: "1") if PostgreSQL should restore base-backup
+        # set to "1" (e.g. restore: "1") if PostgreSQL should restore base-backup
         # Controls env variable: POSTGRES_RESTORE
         restore: ""
-        done: "" # set to non-empty string (e.g. done: "1") once appropriate labels are set on each Pod
+        # set to non-empty string (e.g. done: "1") once appropriate labels are set on each Pod
+        done: ""
     spec:
       containers:
       - name: pgplus
@@ -31,7 +32,7 @@ spec:
           requests:
             memory: "512Mi"
         env:
-        - name: POSTGRES_MASTER_DNS_NAME # FQDN for master PostgreSQL instance
+        - name: POSTGRES_MASTER_DNS_NAME # domain name for master PostgreSQL pod
           valueFrom:
             configMapKeyRef:
               name: pgplus

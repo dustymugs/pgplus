@@ -53,32 +53,61 @@ If you wish to dry-run...
 kubectl apply --dry-run -f my-deployment-copy.yaml
 ```
 
-7. (Optional) Set the `is_standby` and `restore` labels if you have replicas in your deployment
+7. Set the `is_standby`, `restore` labels if you have replicas in your deployment
 
-Let's use the following following output from `kubectl get pods --show-labels`
+Let's use the output from the following command
 
 ```
+kubectl get pods --show-labels -l "role=db"
+```
+
+```
+
 NAME                                READY     STATUS    RESTARTS   AGE       LABELS
 ...
-pgplus-68bbbf854f-9l2tb   0/1     ContainerCreating   0          16s   done=,is_standby=,pod-template-hash=68bbbf854f,restore=,role=db
-pgplus-68bbbf854f-jbdnp   0/1     ContainerCreating   0          16s   done=,is_standby=,pod-template-hash=68bbbf854f,restore=,role=db
-pgplus-68bbbf854f-qqcnn   0/1     ContainerCreating   0          16s   done=,is_standby=,pod-template-hash=68bbbf854f,restore=,role=db
+pgplus-68bbbf854f-9l2tb   0/1     ContainerCreating   0          16s   done=,is_standby=,restore=,role=db,pod-template-hash=68bbbf854f
+pgplus-68bbbf854f-jbdnp   0/1     ContainerCreating   0          16s   done=,is_standby=,restore=,role=db,pod-template-hash=68bbbf854f
+pgplus-68bbbf854f-qqcnn   0/1     ContainerCreating   0          16s   done=,is_standby=,restore=,role=db,pod-template-hash=68bbbf854f
+
 ...
 ```
 
-We want `pgplus-68bbbf854f-9l2tb` to be the master PostgreSQL instance and the other Pods to be standby PostgreSQL instances
+We want `pgplus-68bbbf854f-9l2tb` to be the master PostgreSQL pod and the other pods to be standby PostgreSQL pods.
+
+Instruct the other pods to restore the latest base backup when ready
 
 ```
 kubectl label --overwrite pods pgplus-68bbbf854f-jbdnp restore=1 is_standby=1
 kubectl label --overwrite pods pgplus-68bbbf854f-qqcnn restore=1 is_standby=1
 ```
 
-8. Add CNAME DNS record for master PostgreSQL instance
-
-9. Finally, let the pods know that you're done making label changes
+8. Finally, let the pods know that you're done making label changes
 
 ```
-kubectl label --overwrite pods --selector='role=db' done=1
+kubectl label --overwrite pods --selector=role=db done=1
 ```
 
-10. At this point, the PGPlus containers will start initializing
+9. Expose master and standby PostgreSQL pods as separate services (one service for master, a separate service for standbys)
+
+```
+cp services.yaml my-services-copy.yaml
+```
+
+Inspect and update the following:
+
+  - `metadata.name`
+  - `port` and `targetPort`
+
+Apply Services
+
+```
+kubectl apply -f my-services-copy.yaml
+```
+
+10. Instruct the master PostgreSQL pod to take a base backup
+
+```
+kubectl exec pgplus-68bbbf854f-9l2tb -- gosu postgres bash -c 'wal-g backup-push $PGDATA'
+```
+
+11. At this point, the PGPlus containers will start initializing
