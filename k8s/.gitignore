@@ -1,3 +1,7 @@
-*-copy.*
-my-*.*
-*.sh
+*
+!.gitignore
+!README.md
+!configmap.yaml
+!secret.yaml
+!deployment.yaml
+!services.yaml
