@@ -9,4 +9,4 @@ data:
   walg.s3_prefix: "s3://bucket/path/to/files"
   #postgres.restore: ""
   #postgres.is_standby: ""
-  #postgres.initdb_args: "-e POSTGRES_INITDB_ARGS='--data-checksums'"
+  #postgres.initdb_args: "--data-checksums"
