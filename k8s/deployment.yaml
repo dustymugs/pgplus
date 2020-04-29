@@ -37,6 +37,7 @@ spec:
             configMapKeyRef:
               name: pgplus
               key: postgres.master_dns_name
+              optional: true
         # non-empty string instructs container to download latest base-backup
         # overwritten by the pod label `restore`
         - name: POSTGRES_RESTORE
@@ -44,6 +45,7 @@ spec:
             configMapKeyRef:
               name: pgplus
               key: postgres.restore
+              optional: true
         # non-empty string instructs container to touch $PGDATA/standby.signal
         # overwritten by the pod label `is_standby`
         - name: POSTGRES_IS_STANDBY
@@ -51,11 +53,13 @@ spec:
             configMapKeyRef:
               name: pgplus
               key: postgres.is_standby
+              optional: true
         - name: POSTGRES_INITDB_ARGS
           valueFrom:
             configMapKeyRef:
               name: pgplus
               key: postgres.initdb_args
+              optional: true
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -71,11 +75,13 @@ spec:
             secretKeyRef:
               name: pgplus
               key: postgres.primary_conninfo
+              optional: true
         - name: PGBOUNCER_POOL_MODE # (session, transaction, statement)
           valueFrom:
             configMapKeyRef:
               name: pgplus
               key: pgbouncer.pool_mode
+              optional: true
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:

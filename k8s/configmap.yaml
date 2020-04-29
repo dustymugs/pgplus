@@ -3,10 +3,10 @@ kind: ConfigMap
 metadata:
   name: pgplus
 data:
-  postgres.master_dns_name: "db-standby"
-  pgbouncer.pool_mode: "session"
+  #postgres.master_dns_name: "db-master"
+  #pgbouncer.pool_mode: "session"
   walg.aws_endpoint: ""
   walg.s3_prefix: "s3://bucket/path/to/files"
-  postgres.restore: "1"
-  postgres.is_standby: "1"
-  postgres.initdb_args: "-e POSTGRES_INITDB_ARGS='--data-checksums'"
+  #postgres.restore: ""
+  #postgres.is_standby: ""
+  #postgres.initdb_args: "-e POSTGRES_INITDB_ARGS='--data-checksums'"
