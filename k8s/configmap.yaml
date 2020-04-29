@@ -10,3 +10,4 @@ data:
   #postgres.restore: ""
   #postgres.is_standby: ""
   #postgres.initdb_args: "--data-checksums"
+  #postgres.archive_mode: "on"

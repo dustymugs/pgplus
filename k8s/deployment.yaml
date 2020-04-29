@@ -60,6 +60,12 @@ spec:
               name: pgplus
               key: postgres.initdb_args
               optional: true
+        - name: POSTGRES_ARCHIVE_MODE # (on|off)
+          valueFrom:
+            configMapKeyRef:
+              name: pgplus
+              key: postgres.archive_mode
+              optional: true
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
