@@ -112,11 +112,11 @@ spec:
         ports:
         - containerPort: 5432
         - containerPort: 6432
-        #command: ["/pgplus-docker-entrypoint.sh"]
-        #args: ["postgres"]
         volumeMounts:
           - name: podinfo
             mountPath: /etc/podinfo
+        #command: ["/pgplus-docker-entrypoint.sh"]
+        #args: ["postgres"]
       volumes:
         - name: podinfo
           downwardAPI:
