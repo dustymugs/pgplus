@@ -93,7 +93,7 @@ docker run \
   --network=mybridge
   -p 5432:5432 \
   -p 6432:6432 \
-  -e POSTGRES_PRIMARY_CONNINFO="host=1.db port=5432 user=postgres password=mypassword" \
+  -e POSTGRES_PRIMARY_CONNINFO="host=db-master port=5432 user=postgres password=mypassword" \
   -e POSTGRES_PASSWORD=mypassword \
   -e AWS_ACCESS_KEY_ID=myaccesskey \
   -e AWS_SECRET_ACCESS_KEY=mysecretkey \
@@ -105,7 +105,7 @@ docker run \
 6. Create a base backup with WAL-G
 
 ```
-docker exec 1.db gosu postgres wal-g backup-push /var/lib/postgresql/data
+docker exec db-master gosu postgres wal-g backup-push /var/lib/postgresql/data
 ```
 
 Replace `/var/lib/postgresql/data` if you are not using the default path for `$PGDATA`
@@ -120,7 +120,7 @@ docker run \
   -p 6433:6432 \
   -e POSTGRES_RESTORE=1 \
   -e POSTGRES_IS_STANDBY=1 \
-  -e POSTGRES_PRIMARY_CONNINFO="host=1.db port=5432 user=postgres password=mypassword" \
+  -e POSTGRES_PRIMARY_CONNINFO="host=db-master port=5432 user=postgres password=mypassword" \
   -e POSTGRES_PASSWORD=mypassword \
   -e AWS_ACCESS_KEY_ID=myaccesskey \
   -e AWS_SECRET_ACCESS_KEY=mysecretkey \
@@ -139,7 +139,7 @@ The only changes here are:
 8. After a minute or so, run the following:
 
 ```
-docker exec 1.db gosu psql -U postgres -c "SELECT * FROM pg_stat_replication"
+docker exec db-master gosu psql -U postgres -c "SELECT * FROM pg_stat_replication"
 ```
 
 We expect one row in the query resultset
