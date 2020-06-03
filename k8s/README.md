@@ -121,3 +121,41 @@ kubectl exec pgplus-68bbbf854f-9l2tb -- gosu postgres bash -c 'wal-g backup-push
 ```
 kubectl exec pgplus-68bbbf854f-9l2tb -- psql -U postgres -c "SELECT * FROM pg_stat_replication"
 ```
+
+## A basic script to create a new PostgreSQL cluster
+
+Essentially the above basic flow in a bash script
+
+```
+kubectl delete --wait services db-master db-standby || true
+kubectl delete --wait deployments pgplus || true
+kubectl delete --wait configmaps pgplus || true
+kubectl delete --wait secrets pgplus || true
+
+kubectl apply --overwrite --wait -f my-secret.yaml
+kubectl apply --overwrite --wait -f my-configmap.yaml
+kubectl apply --overwrite --wait -f my-deployment.yaml
+
+PODS=$(kubectl get pods --selector=role=db --no-headers | awk '{print $1}')
+OLD_IFS=$IFS
+IFS=$'\n'
+MASTER_POD=""
+for pod in $PODS; do
+	if [ -z "$MASTER_POD" ]; then
+		MASTER_POD="$pod"
+		echo "Master pod: $pod"
+	else
+		echo "Standby pod: $pod"
+		kubectl label --overwrite pods "$pod" restore=1 is_standby=1
+	fi
+done
+IFS=$OLD_IFS
+
+kubectl label --overwrite pods --selector=role=db done=1
+kubectl apply --overwrite --wait -f my-services.yaml
+
+kubectl exec $MASTER_POD -- gosu postgres bash -c 'wal-g backup-push $PGDATA'
+echo "waiting for standbys to come up"
+sleep 70
+kubectl exec $MASTER_POD -- psql -U postgres -c "SELECT * FROM pg_stat_replication"
+```
