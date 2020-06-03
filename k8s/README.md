@@ -116,10 +116,58 @@ kubectl exec pgplus-68bbbf854f-9l2tb -- gosu postgres bash -c 'wal-g backup-push
 
 11. At this point, the PGPlus containers will start initializing
 
-12. After a few seconds, check the replication status. We expect one row per standby PostgreSQL pod
+12. After a few seconds, check the replication status
 
 ```
-kubectl exec pgplus-68bbbf854f-9l2tb -- psql -U postgres -c "SELECT * FROM pg_stat_replication"
+kubectl exec pgplus-68bbbf854f-9l2tb -- psql -U postgres -c '\x' -c "SELECT * FROM pg_stat_replication"
+```
+
+We expect one row per standby PostgreSQL pod
+
+```
+Expanded display is on.
+-[ RECORD 1 ]----+------------------------------
+pid              | 246
+usesysid         | 10
+usename          | postgres
+application_name | walreceiver
+client_addr      | 10.244.0.236
+client_hostname  | 
+client_port      | 50632
+backend_start    | 2020-06-03 16:03:45.643322+00
+backend_xmin     | 
+state            | streaming
+sent_lsn         | 0/7000000
+write_lsn        | 0/7000000
+flush_lsn        | 0/7000000
+replay_lsn       | 0/7000000
+write_lag        | 
+flush_lag        | 
+replay_lag       | 
+sync_priority    | 0
+sync_state       | async
+reply_time       | 2020-06-03 16:12:10.001118+00
+-[ RECORD 2 ]----+------------------------------
+pid              | 247
+usesysid         | 10
+usename          | postgres
+application_name | walreceiver
+client_addr      | 10.244.0.157
+client_hostname  | 
+client_port      | 53624
+backend_start    | 2020-06-03 16:03:45.946197+00
+backend_xmin     | 
+state            | streaming
+sent_lsn         | 0/7000000
+write_lsn        | 0/7000000
+flush_lsn        | 0/7000000
+replay_lsn       | 0/7000000
+write_lag        | 
+flush_lag        | 
+replay_lag       | 
+sync_priority    | 0
+sync_state       | async
+reply_time       | 2020-06-03 16:12:10.001279+00
 ```
 
 ## A basic script to create a new PostgreSQL cluster
@@ -157,5 +205,5 @@ kubectl apply --overwrite --wait -f my-services.yaml
 kubectl exec $MASTER_POD -- gosu postgres bash -c 'wal-g backup-push $PGDATA'
 echo "waiting for standbys to come up"
 sleep 70
-kubectl exec $MASTER_POD -- psql -U postgres -c "SELECT * FROM pg_stat_replication"
+kubectl exec $MASTER_POD -- psql -U postgres -c '\x' -c "SELECT * FROM pg_stat_replication"
 ```

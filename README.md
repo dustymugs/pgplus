@@ -139,7 +139,32 @@ The only changes here are:
 8. After a minute or so, run the following:
 
 ```
-docker exec db-master gosu psql -U postgres -c "SELECT * FROM pg_stat_replication"
+docker exec db-master gosu psql -U postgres -c '\x' -c "SELECT * FROM pg_stat_replication"
 ```
 
 We expect one row in the query resultset
+
+```
+Expanded display is on.
+-[ RECORD 1 ]----+------------------------------
+pid              | 246
+usesysid         | 10
+usename          | postgres
+application_name | walreceiver
+client_addr      | 10.244.0.236
+client_hostname  | 
+client_port      | 50632
+backend_start    | 2020-06-03 16:03:45.643322+00
+backend_xmin     | 
+state            | streaming
+sent_lsn         | 0/7000000
+write_lsn        | 0/7000000
+flush_lsn        | 0/7000000
+replay_lsn       | 0/7000000
+write_lag        | 
+flush_lag        | 
+replay_lag       | 
+sync_priority    | 0
+sync_state       | async
+reply_time       | 2020-06-03 16:12:10.001118+00
+```
