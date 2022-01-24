@@ -27,7 +27,7 @@ archive_timeout = 60
 
 restore_command = 'wal-g wal-fetch "%f" "%p"'
 
-wal_keep_segments = 60
+wal_keep_size = 960
 
 primary_conninfo = '${POSTGRES_PRIMARY_CONNINFO}'
 EOF

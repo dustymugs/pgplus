@@ -119,4 +119,4 @@ fi
 (/etc/init.d/pgbouncer start || true)
 
 # run postgresql's entrypoint script
-exec /docker-entrypoint.sh "$@"
+exec /usr/local/bin/docker-entrypoint.sh "$@"

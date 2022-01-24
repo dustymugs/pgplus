@@ -1,5 +1,5 @@
 #
-# docker build -f Dockerfile -t dustymugs/pgplus:12-3.0 . --build-arg POSTGIS_RELEASE=12-3.0
+# docker build -f Dockerfile -t dustymugs/pgplus:14-3.2 . --build-arg POSTGIS_RELEASE=14-3.2
 #
 # docker run --rm -p 5432:5432 \
 # 	-e POSTGRES_USER=myusername \
@@ -11,15 +11,15 @@
 # 	-e POSTGRES_INITDB_ARGS="--data-checksums" \
 # 	-e POSTGRES_PRIMARY_CONNINFO="host=master port=5432 user=myusername password=mypassword" \
 # 	-d \
-# 	dustymugs/pgplus:12-3.0
+# 	dustymugs/pgplus:14-3.2
 #
 
-ARG POSTGIS_RELEASE=12-3.0
+ARG POSTGIS_RELEASE=14-3.2
 
 FROM postgis/postgis:$POSTGIS_RELEASE
 
-ARG WALG_RELEASE=v0.2.15
-ARG PGBOUNCER_RELEASE=1.12.0
+ARG WALG_RELEASE=v1.1
+ARG PGBOUNCER_RELEASE=1.16.0
 
 ARG POSTGRES_UNIX_SOCKET_DIRECTORIES=/var/run/postgresql
 ARG POSTGRES_PORT=5432
@@ -85,7 +85,8 @@ ENV PGBOUNCER_MAX_USER_CONNECTIONS=$PGBOUNCER_MAX_USER_CONNECTIONS
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update -qq && \
     apt-get install -qqy curl ca-certificates libsodium23 vim && \
-    cd /usr/local/bin && curl -L https://github.com/wal-g/wal-g/releases/download/$WALG_RELEASE/wal-g.linux-amd64.tar.gz | tar xzf - 
+    cd /usr/local/bin && curl -L https://github.com/wal-g/wal-g/releases/download/$WALG_RELEASE/wal-g-pg-ubuntu-20.04-amd64.tar.gz | tar xzf - && \
+    mv wal-g-pg-ubuntu-20.04-amd64 wal-g
 
 RUN apt-get install -qqy pgbouncer && \
 		echo "%include /etc/pgbouncer/local.ini" >> /etc/pgbouncer/pgbouncer.ini && \
